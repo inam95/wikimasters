@@ -19,7 +19,7 @@ type CreateArticleInput = {
 type UpdateArticleInput = {
   title: string;
   content: string;
-  imageUrl: string;
+  imageUrl?: string;
 };
 
 export async function createArticle(data: CreateArticleInput) {
@@ -37,6 +37,7 @@ export async function createArticle(data: CreateArticleInput) {
       content: data.content,
       authorId: user.id,
       published: true,
+      imageUrl: data.imageUrl,
     })
     .returning({ id: articles.id });
 
@@ -61,6 +62,7 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
       title: data.title,
       slug: slugify(data.title, { lower: true, strict: true }),
       content: data.content,
+      imageUrl: data.imageUrl,
     })
     .where(eq(articles.id, +id));
 

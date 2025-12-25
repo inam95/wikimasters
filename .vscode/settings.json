@@ -1,5 +1,11 @@
 {
-  "cSpell.words": ["neondatabase", "stackframe", "turbopack", "Wikimasters"],
+  "cSpell.words": [
+    "Dragbar",
+    "neondatabase",
+    "stackframe",
+    "turbopack",
+    "Wikimasters"
+  ],
   "editor.defaultFormatter": "biomejs.biome",
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome"
