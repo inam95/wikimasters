@@ -2,18 +2,21 @@
 
 import MDEditor from "@uiw/react-md-editor";
 import { Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
+import { createArticle, updateArticle } from "@/actions/articles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface WikiEditorProps {
-  initialTitle?: string;
-  initialContent?: string;
-  isEditing?: boolean;
+  initialTitle: string;
+  initialContent: string;
+  isEditing: boolean;
   articleId?: string;
+  authorId: string;
 }
 
 interface FormData {
@@ -32,12 +35,14 @@ export default function WikiEditor({
   initialContent = "",
   isEditing = false,
   articleId,
+  authorId,
 }: WikiEditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   // Validate form
   const validateForm = (): boolean => {
@@ -78,6 +83,31 @@ export default function WikiEditor({
     }
 
     setIsSubmitting(true);
+
+    try {
+      const payload = {
+        title: title.trim(),
+        content: content.trim(),
+        authorId: authorId,
+        imageUrl: "",
+      };
+      if (isEditing && articleId) {
+        await updateArticle(articleId, payload);
+        router.push(`/wiki/${articleId}`);
+      } else {
+        const result = await createArticle(payload);
+        if (result.success) {
+          router.push(`/wiki/${result.id}`);
+        } else {
+          router.push("/");
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting article:", error);
+      alert("Failed to submit article");
+    } finally {
+      setIsSubmitting(false);
+    }
 
     const formData: FormData = {
       title: title.trim(),

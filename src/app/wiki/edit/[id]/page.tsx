@@ -1,4 +1,6 @@
+import { notFound } from "next/navigation";
 import WikiEditor from "@/components/wiki-editor";
+import { getArticle } from "@/lib/data/articles";
 import { stackServerApp } from "@/stack/server";
 
 interface EditArticlePageProps {
@@ -11,38 +13,33 @@ export default async function EditArticlePage({
   params,
 }: EditArticlePageProps) {
   const { id } = await params;
-  await stackServerApp.getUser({ or: "redirect" });
+  const user = await stackServerApp.getUser({ or: "redirect" });
 
-  // In a real app, you would fetch the article data here
-  // For now, we'll just show some mock data if it's not "new"
-  const mockData =
-    id !== "new"
-      ? {
-          title: `Sample Article ${id}`,
-          content: `# Sample Article ${id}
+  if (id === "new") {
+    return (
+      <WikiEditor
+        isEditing={true}
+        articleId={id}
+        initialTitle=""
+        initialContent=""
+        authorId={user.id}
+      />
+    );
+  }
 
-This is some sample markdown content for article ${id}.
+  const article = await getArticle(+id);
 
-## Features
-- **Bold text**
-- *Italic text*
-- [Links](https://example.com)
-
-## Code Example
-\`\`\`javascript
-console.log("Hello from article ${id}");
-\`\`\`
-
-This would normally be fetched from your API.`,
-        }
-      : {};
+  if (!article) {
+    notFound();
+  }
 
   return (
     <WikiEditor
-      initialTitle={mockData.title}
-      initialContent={mockData.content}
+      initialTitle={article.title}
+      initialContent={article.content}
       isEditing={true}
       articleId={id}
+      authorId={user.id}
     />
   );
 }
