@@ -6,7 +6,7 @@ import { stackServerApp } from "@/stack/server";
 
 export async function getArticles() {
   await stackServerApp.getUser({ or: "redirect" });
-  const cached = await redis.get("articles:all");
+  const cached = await redis.get<typeof response>("articles:all");
   if (cached) {
     return cached;
   }
