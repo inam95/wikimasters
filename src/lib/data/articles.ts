@@ -1,10 +1,15 @@
 import { desc, eq } from "drizzle-orm";
+import redis from "@/cache";
 import db from "@/db";
 import { articles, usersSync } from "@/db/schema";
 import { stackServerApp } from "@/stack/server";
 
 export async function getArticles() {
   await stackServerApp.getUser({ or: "redirect" });
+  const cached = await redis.get("articles:all");
+  if (cached) {
+    return cached;
+  }
   const response = await db
     .select({
       id: articles.id,
@@ -19,6 +24,9 @@ export async function getArticles() {
     .leftJoin(usersSync, eq(articles.authorId, usersSync.id))
     .orderBy(desc(articles.createdAt));
 
+  await redis.set("articles:all", response, {
+    ex: 60,
+  });
   return response;
 }
 

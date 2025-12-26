@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import slugify from "slugify";
+import redis from "@/cache";
 import db from "@/db";
 import { authorizeUserToEditArticle } from "@/db/authz";
 import { articles } from "@/db/schema";
@@ -41,6 +42,8 @@ export async function createArticle(data: CreateArticleInput) {
     })
     .returning({ id: articles.id });
 
+  await redis.del("articles:all");
+
   return { success: true, message: "Article created", id: result[0].id };
 }
 
@@ -66,6 +69,8 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     })
     .where(eq(articles.id, +id));
 
+  await redis.del("articles:all");
+
   return { success: true, message: "Article updated" };
 }
 
@@ -81,6 +86,8 @@ export async function deleteArticle(id: string) {
   }
 
   await db.delete(articles).where(eq(articles.id, +id));
+
+  await redis.del("articles:all");
 
   return { success: true, message: "Article deleted" };
 }
