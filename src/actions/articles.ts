@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import slugify from "slugify";
+import { summarizeArticle } from "@/ai/summarize";
 import redis from "@/cache";
 import db from "@/db";
 import { authorizeUserToEditArticle } from "@/db/authz";
@@ -30,6 +31,8 @@ export async function createArticle(data: CreateArticleInput) {
   }
   await ensureUserExists(user);
 
+  const summary = await summarizeArticle(data.title, data.content);
+
   const result = await db
     .insert(articles)
     .values({
@@ -39,6 +42,7 @@ export async function createArticle(data: CreateArticleInput) {
       authorId: user.id,
       published: true,
       imageUrl: data.imageUrl,
+      summary: summary,
     })
     .returning({ id: articles.id });
 
@@ -59,6 +63,8 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     throw new Error("❌ Forbidden");
   }
 
+  const summary = await summarizeArticle(data.title, data.content);
+
   await db
     .update(articles)
     .set({
@@ -66,6 +72,7 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
       slug: slugify(data.title, { lower: true, strict: true }),
       content: data.content,
       imageUrl: data.imageUrl,
+      summary: summary ?? undefined,
     })
     .where(eq(articles.id, +id));
 

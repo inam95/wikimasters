@@ -12,7 +12,7 @@ export default async function Home() {
             title={article.title}
             author={article.author ?? ""}
             date={article.createdAt}
-            summary={article.content}
+            summary={article.summary ?? "Summary not available"}
             href={`/wiki/${article.id}`}
           />
         ))}

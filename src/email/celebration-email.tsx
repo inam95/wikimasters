@@ -1,4 +1,3 @@
-import { render } from "@react-email/render";
 import { eq } from "drizzle-orm";
 import db from "@/db";
 import { articles, usersSync } from "@/db/schema";
@@ -39,7 +38,7 @@ export default async function sendCelebrationEmail(
         name={name ?? "User"}
         pageviews={pageviews}
         articleTitle={articleTitle}
-        articleUrl={`${baseUrl}/articles/${articleId}`}
+        articleUrl={`${baseUrl}/wiki/${articleId}`}
       />
     ),
   });
